@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+  <title>Day Wise Attendance Report</title>
+  <th:block th:replace="~{fragments/header :: common-head}"></th:block> 
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" >
+   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" >
+    
+  <style>
+    body {
+      background: #f5f7fa; /* Matches Main Dashboard Theme*/
+    }
+    .dashboard-card {
+      border: none;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      border-radius: 12px;
+      background: white;
+    }
+    .status-dot {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      font-size: 0.85rem;
+    }
+  </style>
+</head>
+<body class="py-4">
+
+  <div class="container">
+    
+    <!-- NAVIGATION & BACK BUTTON -->
+    <div class="mb-4">
+      <a href="/student/dashboard" class="btn btn-sm btn-light border rounded-pill px-3 fw-semibold text-secondary">
+        <i class="bi bi-arrow-left-short fs-5 align-middle"></i> Back to Dashboard
+      </a>
+    </div>
+
+    <!-- STUDENT & REPORT HEADER -->
+    <header class="dashboard-card p-4 mb-4">
+      <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+        <div>
+          <h5 class="text-muted mb-1 text-uppercase tracking-wider small fw-bold">Attendance Log</h5>
+          <h2 class="fw-bold text-dark mb-0">
+            <i class="bi bi-calendar3 text-primary me-2"></i> 
+            <span th:text="${month}">JUNE 2026</span>
+          </h2>
+        </div>
+        <!-- Profile Quick view details -->
+        <div class="p-3 bg-light rounded-3 border">
+          <div class="small mb-1"><strong><i class="bi bi-person me-1"></i> Student:</strong> <span th:text="${studentName}">Akash</span></div>
+          <div class="small mb-1"><strong><i class="bi bi-building me-1"></i> Dept:</strong> <span th:text="${deptName}">III B.Sc CS</span></div>
+          <div class="small"><strong><i class="bi bi-journal-bookmark me-1"></i> Class:</strong> <span th:text="${className}">III B.Sc CS</span></div>
+        </div>
+      </div>
+    </header>
+
+    <!-- METRICS SUMMARY GRID -->
+    <section class="row g-3 mb-4 text-center">
+      <div class="col-6 col-md-2.4 col-lg">
+        <div class="dashboard-card p-3 border-top border-primary border-4 h-100">
+          <small class="text-muted d-block fw-semibold text-uppercase mb-1">Working Days</small>
+          <span class="fw-bold fs-4 text-dark" th:text="${workDays}">0</span>
+        </div>
+      </div>
+      <div class="col-6 col-md-2.4 col-lg">
+        <div class="dashboard-card p-3 border-top border-secondary border-4 h-100">
+          <small class="text-muted d-block fw-semibold text-uppercase mb-1">Total Hours</small>
+          <span class="fw-bold fs-4 text-dark" th:text="${totalhours}">0</span>
+        </div>
+      </div>
+      <div class="col-6 col-md-2.4 col-lg">
+        <div class="dashboard-card p-3 border-top border-success border-4 h-100">
+          <small class="text-muted d-block fw-semibold text-uppercase mb-1 text-success">Present Hours</small>
+          <span class="fw-bold fs-4 text-success" th:text="${present}">0</span>
+        </div>
+      </div>
+      <div class="col-6 col-md-2.4 col-lg">
+        <div class="dashboard-card p-3 border-top border-danger border-4 h-100">
+          <small class="text-muted d-block fw-semibold text-uppercase mb-1 text-danger">Absent Hours</small>
+          <span class="fw-bold fs-4 text-danger" th:text="${absent}">0</span>
+        </div>
+      </div>
+      <div class="col-12 col-md-2.4 col-lg">
+        <div class="dashboard-card p-3 bg-success-subtle border-top border-success border-4 h-100">
+          <small class="text-success-emphasis d-block fw-bold text-uppercase mb-1">Attendance</small>
+          <span class="fw-bold fs-4 text-success-emphasis" th:text="${percentage} + '%'">0%</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- DAY WISE ATTENDANCE TABLE CARD[span_16](start_span)[span_16](end_span) -->
+    <div class="dashboard-card p-4">
+      <h5 class="fw-bold text-secondary mb-3"><i class="bi bi-grid-3x3-gap me-2"></i>Hour-wise Detailed Log</h5>
+      
+      <div class="table-responsive">
+        <table class="table align-middle table-hover mb-0 text-center">
+          <thead class="table-light">
+            <tr>
+              <th scope="col" class="text-start ps-3" style="width: 20%;"></th>
+              <th scope="col"></th>
+              <th scope="col"></th>
+              <th scope="col"></th>
+              <th scope="col"></th>
+              <th scope="col"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr th:each="day : ${daywise}">
+              <!-- Formatted Date Column -->
+              <td class="text-start ps-3 fw-semibold text-primary">
+                <i class="bi bi-calendar-event me-2 small"></i>
+                <span th:text="${#temporals.format(day.date, 'dd-MM-yy')}">01-06</span>
+              </td>
+              
+              <!-- P1 Hour Status[span_25](start_span)[span_25](end_span) -->
+              <td>
+                <span th:if="${day.hourStatus[1] == true}" class="status-dot bg-success-subtle text-success"><i class="bi bi-check"></i></span>
+                <span th:if="${day.hourStatus[1] == false}" class="status-dot bg-danger-subtle text-danger"><i class="bi bi-x"></i></span>
+                <span th:if="${day.hourStatus[1] == null}" class="text-muted fw-light">-</span>
+              </td>
+              
+              <!-- P2 Hour Status[span_29](start_span)[span_29](end_span) -->
+              <td>
+                <span th:if="${day.hourStatus[2] == true}" class="status-dot bg-success-subtle text-success"><i class="bi bi-check"></i></span>
+                <span th:if="${day.hourStatus[2] == false}" class="status-dot bg-danger-subtle text-danger"><i class="bi bi-x"></i></span>
+                <span th:if="${day.hourStatus[2] == null}" class="text-muted fw-light">-</span>
+              </td>
+              
+              <!-- P3 Hour Status[span_33](start_span)[span_33](end_span) -->
+              <td>
+                <span th:if="${day.hourStatus[3] == true}" class="status-dot bg-success-subtle text-success"><i class="bi bi-check"></i></span>
+                <span th:if="${day.hourStatus[3] == false}" class="status-dot bg-danger-subtle text-danger"><i class="bi bi-x"></i></span>
+                <span th:if="${day.hourStatus[3] == null}" class="text-muted fw-light">-</span>
+              </td>
+              
+              <!-- P4 Hour Status[span_37](start_span)[span_37](end_span) -->
+              <td>
+                <span th:if="${day.hourStatus[4] == true}" class="status-dot bg-success-subtle text-success"><i class="bi bi-check"></i></span>
+                <span th:if="${day.hourStatus[4] == false}" class="status-dot bg-danger-subtle text-danger"><i class="bi bi-x"></i></span>
+                <span th:if="${day.hourStatus[4] == null}" class="text-muted fw-light">-</span>
+              </td>
+              
+              <!-- P5 Hour Status[span_41](start_span)[span_41](end_span) -->
+              <td>
+                <span th:if="${day.hourStatus[5] == true}" class="status-dot bg-success-subtle text-success"><i class="bi bi-check"></i></span>
+                <span th:if="${day.hourStatus[5] == false}" class="status-dot bg-danger-subtle text-danger"><i class="bi bi-x"></i></span>
+                <span th:if="${day.hourStatus[5] == null}" class="text-muted fw-light">-</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Bootstrap 5.3.3 JS Bundle CDN[span_45](start_span)[span_45](end_span) -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

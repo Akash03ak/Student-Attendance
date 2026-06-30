@@ -1,0 +1,17 @@
+{"properties": [
+  {
+    "name": "app.contact.phone",
+    "type": "java.lang.String",
+    "description": "A description for 'app.contact.phone'"
+  },
+  {
+    "name": "app.contact.email",
+    "type": "java.lang.String",
+    "description": "A description for 'app.contact.email'"
+  },
+  {
+    "name": "app.contact.website",
+    "type": "java.lang.String",
+    "description": "A description for 'app.contact.website'"
+  }
+]}

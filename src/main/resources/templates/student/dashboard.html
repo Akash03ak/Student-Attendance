@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+  <title>Student Dashboard</title>
+  <th:block th:replace="~{fragments/header :: common-head}"></th:block>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" >
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" >
+  <style>
+    body {
+      background: #f5f7fa;
+    }
+    .dashboard-card {
+      border: none;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      border-radius: 12px;
+      background: white;
+      transition: transform 0.2s;
+    }
+    .dashboard-card:hover {
+      transform: translateY(-2px);
+    }
+    .period-badge {
+      width: 65px;
+      height: 75px;
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border-radius: 10px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+      font-weight: bold;
+    }
+    /* Dynamic Progress Ring Widget */
+    .progress-ring {
+      width: 140px;
+      height: 140px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .progress-ring-inner {
+      width: 115px;
+      height: 115px;
+      background: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+  </style>
+</head>
+<body class="py-4">
+
+  <div class="container">
+    
+    <!-- HEADER SECTION (Profile Overview) -->
+    <header class="dashboard-card p-4 mb-4 d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-3">
+      <div>
+        <h5 class="text-muted mb-1">Welcome back,</h5>
+        <h2 class="fw-bold mb-2">
+          <span th:text="${student.name}">Student</span> <span class="fs-4">👋</span>
+        </h2>
+        <div class="d-flex flex-wrap gap-2 text-muted small">
+          <span><i class="bi bi-person-badge-fill me-1"></i><strong>Roll No:</strong> <span th:text="${student.rollNo}"></span></span>
+          <span class="mx-1 d-none d-sm-inline">|</span>
+          <span><i class="bi bi-building me-1"></i><strong>Dept:</strong> <span th:text="${student.courseClassEnity.department.name}"></span></span>
+          <span class="mx-1 d-none d-sm-inline">|</span>
+          <span><i class="bi bi-journal-bookmark-fill me-1"></i><strong>Class:</strong> <span th:text="${student.courseClassEnity.course}
+			+${student.courseClassEnity.year}+'Year'"></span></span>
+        </div>
+      </div>
+      <div>
+		<form th:action="@{/logout}" method="post">
+			<button type="submit" class="btn btn-danger hover:bg-red-50 font-medium transition-colors text-sm">
+				<i class="bi bi-box-arrow-right me-1"></i> Logout
+			</button>
+		</form>
+      </div>
+    </header>
+
+    <!-- TODAY'S ATTENDANCE SECTION -->
+    <section class="dashboard-card p-4 mb-4">
+      <h5 class="fw-bold mb-3 text-secondary"><i class="bi bi-calendar2-check me-2"></i>Today's Attendance</h5>
+      
+      <!-- Flex container with responsive wrap -->
+      <div class="d-flex flex-wrap gap-3 justify-content-start">
+        
+        <div th:each="hour : ${#numbers.sequence(1,5)}">
+          
+          <!-- Case 1: Present (True) - Green Badge -->
+          <div th:if="${attendance.get(hour) == true}" class="period-badge bg-success-subtle text-success border border-success-subtle">
+            <span class="small" th:text="'P' + ${hour}">P1</span>
+            <i class="bi bi-check-circle-fill fs-5 mt-1"></i>
+          </div>
+
+          <!-- Case 2: Absent (False) - Red Badge -->
+          <div th:if="${attendance.get(hour) == false}" class="period-badge bg-danger-subtle text-danger border border-danger-subtle">
+            <span class="small" th:text="'P' + ${hour}">P1</span>
+            <i class="bi bi-x-circle-fill fs-5 mt-1"></i>
+          </div>
+
+          <!-- Case 3: Pending/Upcoming (Null) - Neutral Grey Badge -->
+          <div th:if="${attendance.get(hour) == null}" class="period-badge bg-light text-muted border">
+            <span class="small" th:text="'P' + ${hour}">P1</span>
+            <i class="bi bi-hourglass-split fs-5 mt-1"></i>
+          </div>
+          
+        </div>
+
+      </div>
+    </section>
+
+    <!-- TWO COLUMN GRID LAYOUT -->
+    <div class="row g-4 mb-4">
+      
+      <!-- Column 1: Progress visual representation -->
+      <div class="col-12 col-md-5">
+        <div class="dashboard-card p-4 h-100 d-flex flex-column align-items-center justify-content-center text-center">
+          <h5 class="fw-bold text-secondary mb-4 align-self-start"><i class="bi bi-pie-chart-fill me-2"></i>Overall Attendance</h5>
+          
+          <!-- Dynamic conic gradient using standard bootstrap variable styling -->
+          <div class="progress-ring" th:style="'background: conic-gradient(#198754 ' + ${percentage} + '%, #e9ecef 0);'">
+            <div class="progress-ring-inner">
+              <h3 class="fw-bold text-success m-0" th:text="${percentage} + '%'">0%</h3>
+            </div>
+          </div>
+          
+          <div class="mt-4">
+            <span th:class="'badge bg-'+${progressColor}+'-subtle text-'+${progressColor}+' px-3 py-2 rounded-pill fw-semibold fs-6'">
+              Status : <span th:text="${status}">✔</span>
+            </span>
+			
+          </div>
+        </div>
+      </div>
+
+      <!-- Column 2: Core Metrics Summary & Statistics -->
+      <div class="col-12 col-md-7">
+        <div class="dashboard-card p-4 h-100">
+          <h5 class="fw-bold text-secondary mb-3"><i class="bi bi-file-earmark-bar-graph-fill me-2"></i>Attendance Summary</h5>
+          
+          <div class="row g-3 mb-4 text-center">
+            <div class="col-4">
+              <div class="p-3 bg-light rounded-3 border">
+                <small class="text-muted fw-semibold d-block text-uppercase">Total Hours</small>
+                <span class="fw-bold fs-4 text-dark" th:text="${totalhours}">0</span>
+              </div>
+            </div>
+            <div class="col-4">
+              <div class="p-3 bg-success-subtle rounded-3 border border-success-subtle text-success">
+                <small class="text-muted fw-semibold d-block text-uppercase">Present</small>
+                <span class="fw-bold fs-4" th:text="${presenthours}">0</span>
+              </div>
+            </div>
+            <div class="col-4">
+              <div class="p-3 bg-danger-subtle rounded-3 border border-danger-subtle text-danger">
+                <small class="text-muted fw-semibold d-block text-uppercase">Absent</small>
+                <span class="fw-bold fs-4" th:text="${absenthours}">0</span>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Standard Bootstrap Horizontal Progress fallback representation -->
+          <div class="px-2">
+            <div class="d-flex justify-content-between small text-muted mb-1">
+              <span>Attendance Track progress</span>
+              <span th:text="${percentage} + '%'"></span>
+            </div>
+            <div class="progress" style="height: 10px;">
+              <div class="progress-bar" th:classappend="${progressColor}"
+                   th:style="'width:'+${percentage}+'%'">
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+
+    <!-- MONTHLY REPORT SECTION -->
+    <div class="dashboard-card p-4">
+      <h5 class="fw-bold text-secondary mb-3"><i class="bi bi-calendar3 me-2"></i>Monthly Report Logs</h5>
+      
+      <div class="table-responsive">
+        <table class="table align-middle table-hover mb-0">
+          <thead class="table-light">
+            <tr>
+              <th scope="col">Month</th>
+              <th scope="col" class="text-center">Total</th>
+              <th scope="col" class="text-center text-success">Present</th>
+              <th scope="col" class="text-center text-danger">Absent</th>
+              <th scope="col" class="text-end">Percentage</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr th:each="row : ${report}">
+              <td>
+                <a class="btn btn-sm btn-outline-primary fw-bold px-3 rounded-pill" 
+                   th:text="${monthsName[row[0]-1]}"
+                   th:href="@{/student/day-wise-report(id=${student.id},month=${row[0]})}">
+                </a>
+              </td>
+              <td class="text-center" th:text="${row[1]}"></td>
+              <td class="text-center text-success fw-medium" th:text="${row[2]}"></td>
+              <td class="text-center text-danger fw-medium" th:text="${row[3]}"></td>
+              <!-- UX improvement: formats raw fractional decimals into integer strings cleanly inside view -->
+              <td class="text-end fw-bold text-success" 
+                  th:text="${T(java.lang.Math).round(row[2] * 100.0 / row[1])} + '%'">
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Thymeleaf Condition based Pop-up Alert script -->
+  <script th:if="${percentage < 74}">
+    window.onload = function(){
+      alert("Your attendance is below 75%. Please improve your attendance.")
+    }
+  </script>
+
+  <!-- Bootstrap 5.3.3 JS Bundle CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

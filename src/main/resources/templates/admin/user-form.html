@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+     <title>Add / Edit User</title>
+	 <th:block th:replace="~{fragments/header :: common-head}"></th:block>
+	 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" >
+	   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" >
+	   
+	   
+	 <style>
+        /* Smooth fade animation wrapper for class selection */
+        #classIdField {
+            transition: all 0.3s ease-in-out;
+        }
+    </style>
+</head>
+<body class="bg-light">
+
+<nav class="navbar navbar-dark bg-dark px-3 shadow-sm">
+    <span class="navbar-brand mb-0 h1">Attendance System Administration</span>
+</nav>
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-sm border-0 rounded-3">
+                <div class="card-body p-4">
+                    
+                    <h3 class="card-title mb-4 border-b pb-2 text-primary" 
+                        th:text="${userEntity.id == null} ? '➔ Add New User' : '✏ Edit User Management'">
+                    </h3>
+                    
+                    <form th:action="@{/admin/save-user}" th:object="${userEntity}" method="post" id="userRegistrationForm">
+                        <input type="hidden" th:field="*{id}">
+						
+						<div class="mb-3">
+						    <label class="form-label font-semibold text-secondary">Name</label>
+						    <input type="text" th:field="*{name}" class="form-control" placeholder="Enter name..." required>
+						</div>
+
+						<div class="mb-3">
+						    <label class="form-label font-semibold text-secondary">Email</label>
+						    <input type="email" th:field="*{email}" class="form-control" placeholder="Enter email..." required>
+						</div>
+												
+                        
+                        <div class="mb-3">
+                            <label class="form-label font-semibold text-secondary">Username/Id</label>
+                            <input type="text" th:field="*{username}" class="form-control" placeholder="Enter username..." required>
+                        </div>
+                        
+                        <div th:if="${userEntity.id == null}" class="mb-3">
+                            <label class="form-label font-semibold text-secondary">Password</label>
+                            <input type="password" th:field="*{password}" class="form-control" minlength="8" placeholder="Minimum 8 characters..." required>
+                        </div>
+                        <input type="hidden" th:if="${userEntity.id > 0}" th:field="*{password}">
+                        
+                        <div class="mb-3">
+                            <label class="form-label font-semibold text-secondary">Access Role Authorization</label>
+                            <select th:field="*{role}" id="roleSelector" class="form-select" required>
+                                <option value="ADMIN">ADMIN (Full Access Controls)</option>
+                                <option value="STAFF">STAFF (Class Incharge Modules)</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-4 p-3 bg-light rounded-3 border" id="classIdField" style="display: none;">
+                            <label class="form-label text-dark font-bold">Assign Class Incharge Mapping</label>
+                            <select th:field="*{classId}" class="form-select" id="classSelectDropdown">
+                                <option th:each="cls : ${classes}" 
+                                        th:value="${cls.id}" 
+                                        th:text="${cls.year}+'Year '+${cls.course}+' '+${cls.shift}">
+                                    III BSc Computer Science - A
+                                </option>
+                            </select>
+                            <div class="form-text text-muted mt-1">Please select the target context class this staff will manage.</div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-end gap-2 pt-2 border-top">
+                            <a th:href="@{/admin/dashboard}" class="btn btn-outline-secondary px-4">
+                                Cancel
+                            </a>
+                            <button type="submit" class="btn btn-success px-4 font-semibold">
+                                <i class="btn-sm text-white"></i> Save Record Entity
+                            </button>
+                        </div>
+                    </form>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const roleSelector = document.getElementById("roleSelector");
+        const classIdField = document.getElementById("classIdField");
+        const classSelectDropdown = document.getElementById("classSelectDropdown");
+
+        function toggleClassVisibility() {
+            if (roleSelector.value === "STAFF") {
+                // If Role is Staff: display dropdown and make selection mandatory
+                classIdField.style.display = "block";
+                classSelectDropdown.setAttribute("required", "required");
+            } else {
+                // If Role is Admin: hide dropdown, clear selections, and bypass validation rule criteria
+                classIdField.style.display = "none";
+                classSelectDropdown.value = "";
+                classSelectDropdown.removeAttribute("required");
+            }
+        }
+
+        // 1. Instantly trigger visibility evaluation check loop rules during initial page render sequence
+        toggleClassVisibility();
+
+        // 2. Attach dynamic real-time event runtime tracking listeners to intercept select value modifications
+        roleSelector.addEventListener("change", toggleClassVisibility);
+    });
+</script>
+
+
+</body>
+</html>
